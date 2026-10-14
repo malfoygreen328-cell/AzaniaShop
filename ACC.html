@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>User Account - Azania</title>
+
+<style>
+:root {
+  --bottle-green:#0f3d2e;
+  --bottle-green-light:#1f6b52;
+  --gray-light:#f5f7f6;
+  --text-light:#fff;
+  --radius:12px;
+}
+
+*{box-sizing:border-box;font-family:Segoe UI,Arial;}
+
+body{
+  margin:0;
+  background:linear-gradient(135deg,#0f3d2e,#08261d);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  min-height:100vh;
+  padding:40px 15px;
+}
+
+.account-container{
+  width:100%;
+  max-width:900px;
+  background:#fff;
+  border-radius:var(--radius);
+  padding:30px;
+  margin:auto;
+}
+
+h1{
+  text-align:center;
+  color:var(--bottle-green);
+}
+
+.tabs{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  justify-content:center;
+  margin-bottom:20px;
+}
+
+.tab-btn{
+  background:#eee;
+  border:none;
+  padding:10px 16px;
+  border-radius:30px;
+  cursor:pointer;
+}
+
+.tab-btn.active{
+  background:var(--bottle-green);
+  color:white;
+}
+
+.tab-content{
+  display:none;
+  background:var(--gray-light);
+  padding:20px;
+  border-radius:var(--radius);
+}
+
+.tab-content.active{
+  display:block;
+}
+
+input, select{
+  width:100%;
+  padding:10px;
+  margin:10px 0;
+  border-radius:8px;
+  border:1px solid #ccc;
+}
+
+.primary-btn{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:30px;
+  background:var(--bottle-green);
+  color:white;
+  cursor:pointer;
+}
+
+.logout-btn{
+  margin-top:30px;
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:30px;
+  background:#222;
+  color:white;
+  cursor:pointer;
+}
+
+.order-card{
+  background:#fff;
+  border-radius:8px;
+  padding:10px;
+  margin-bottom:10px;
+  border:1px solid #ccc;
+}
+
+.order-card p{
+  margin:2px 0;
+  font-size:0.95rem;
+}
+
+/* =========================
+   ORDER PROGRESS BAR
+========================= */
+.order-progress {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.order-step {
+  flex: 1;
+  text-align: center;
+  font-size: 0.75rem;
+  position: relative;
+  color: #999;
+}
+
+.order-step.active {
+  color: var(--bottle-green);
+  font-weight: bold;
+}
+
+.order-step::after {
+  content: '';
+  position: absolute;
+  top: 10px;
+  right: -50%;
+  height: 4px;
+  width: 100%;
+  background: #ccc;
+  z-index: -1;
+}
+
+.order-step:last-child::after {
+  display: none;
+}
+
+.order-step.active::after {
+  background: var(--bottle-green);
+}
+
+    /* ============ SHARED FOOTER ============ */
+    .azania-footer {
+      background: #043927;
+      color: #e6f0ea;
+      margin-top: 50px;
+      padding: 2rem 1.5rem 1.25rem;
+    }
+
+    .azania-footer .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      align-items: center;
+      text-align: center;
+    }
+
+    .azania-footer .footer-brand img {
+      height: 44px;
+      display: block;
+      margin: 0 auto 0.4rem;
+      border-radius: 6px;
+    }
+
+    .azania-footer .footer-brand strong {
+      display: block;
+      color: #fff;
+      font-size: 1.1rem;
+    }
+
+    .azania-footer .footer-brand p {
+      margin: 0.4rem 0 0;
+      font-size: 0.9rem;
+      color: #b8d4c6;
+      max-width: 320px;
+    }
+
+    .azania-footer .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem 1.25rem;
+      justify-content: center;
+    }
+
+    .azania-footer .footer-links a {
+      color: #e6f0ea;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    .azania-footer .footer-links a:hover {
+      color: #fff;
+      text-decoration: underline;
+    }
+
+    .azania-footer .footer-legal {
+      font-size: 0.8rem;
+      color: #9fb9ac;
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      padding-top: 1rem;
+      width: 100%;
+      text-align: center;
+    }
+
+    @media (min-width: 768px) {
+      .azania-footer .footer-inner {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: flex-start;
+        text-align: left;
+      }
+
+      .azania-footer .footer-brand img {
+        margin: 0 0 0.4rem;
+      }
+
+      .azania-footer .footer-links {
+        justify-content: flex-end;
+      }
+    }
+</style>
+</head>
+
+<body>
+<div class="account-container">
+
+<h1>Your Azania Account</h1>
+
+<div class="tabs">
+  <button class="tab-btn active" data-tab="profile">👤 Profile</button>
+  <button class="tab-btn" data-tab="orders">📦 Orders</button>
+  <button class="tab-btn" data-tab="payments">💳 Payment</button>
+  <button class="tab-btn" data-tab="credit">💰 Credit</button>
+  <button class="tab-btn" data-tab="support">🛠️ Support</button>
+  <button class="tab-btn" data-tab="returns">↩️ Returns</button>
+</div>
+
+<!-- PROFILE -->
+<div class="tab-content active" id="profile">
+<h2>Profile Info</h2>
+<p><strong>Name:</strong> <span id="user-name">Loading...</span></p>
+<p><strong>Email:</strong> <span id="user-email">Loading...</span></p>
+</div>
+
+<!-- ORDERS -->
+<div class="tab-content" id="orders">
+<h2>Your Orders</h2>
+
+<div>
+  <h3>Track Order</h3>
+  <input type="text" id="track-order-id" placeholder="Enter Order ID" />
+  <button class="primary-btn" onclick="trackOrder()">Track</button>
+  <div id="track-result"></div>
+</div>
+
+<div id="orders-list">
+  <p>Loading orders...</p>
+</div>
+</div>
+
+<!-- PAYMENTS -->
+<div class="tab-content" id="payments">
+<h2>Payment Methods</h2>
+<p>No saved payment methods.</p>
+</div>
+
+<!-- CREDIT -->
+<div class="tab-content" id="credit">
+<h2>Store Credit</h2>
+<p>Balance: R0.00</p>
+</div>
+
+<!-- SUPPORT -->
+<div class="tab-content" id="support">
+<h2>Support</h2>
+<p>Email: support@azaniashop.co.za</p>
+<p>Phone: +27 64 738 8187</p>
+</div>
+
+<!-- RETURNS -->
+<div class="tab-content" id="returns">
+<h2>Returns & Refunds</h2>
+<p>You can request a return within 7 days of delivery.</p>
+
+<h3>Your Return Requests</h3>
+<ul id="returns-list">
+<li>Loading returns...</li>
+</ul>
+
+<h3>Request a Return</h3>
+<input type="text" id="return-order-id" placeholder="Enter Order ID" />
+<select id="return-reason">
+<option value="">Select Reason</option>
+<option value="Damaged">Damaged</option>
+<option value="Wrong Item">Wrong Item</option>
+<option value="Not Needed">Not Needed</option>
+</select>
+
+<button class="primary-btn" onclick="requestReturn()">Submit Return Request</button>
+</div>
+
+<button class="logout-btn" onclick="logoutUser()">Logout</button>
+
+</div>
+
+<script>
+const API_URL = "https://api.azaniashop.co.za/api";
+const token = localStorage.getItem("azaniaToken");
+
+if(!token){
+  alert("Please login first");
+  window.location.href="login.html";
+}
+
+/* -------------------------
+TAB SWITCHING
+--------------------------*/
+const tabButtons=document.querySelectorAll(".tab-btn");
+const tabContents=document.querySelectorAll(".tab-content");
+
+tabButtons.forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    tabButtons.forEach(b=>b.classList.remove("active"));
+    tabContents.forEach(c=>c.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById(btn.dataset.tab).classList.add("active");
+  });
+});
+
+/* -------------------------
+LOAD PROFILE
+--------------------------*/
+async function loadProfile(){
+  try{
+    const res=await fetch(`${API_URL}/auth/me`,{
+      headers:{ Authorization:`Bearer ${token}` }
+    });
+    const data=await res.json();
+    document.getElementById("user-name").textContent=data.name;
+    document.getElementById("user-email").textContent=data.email;
+
+    loadOrders();
+    loadReturns(data._id);
+
+  }catch(err){
+    console.error(err);
+  }
+}
+
+/* -------------------------
+LOAD ORDERS
+--------------------------*/
+async function loadOrders(){
+  try{
+    const res = await fetch(`${API_URL}/orders`,{
+      headers:{ Authorization:`Bearer ${token}` }
+    });
+    const data = await res.json();
+    const orders = data.orders || [];
+    const list = document.getElementById("orders-list");
+    list.innerHTML = "";
+
+    if(orders.length===0){
+      list.innerHTML="<p>No orders yet</p>";
+      return;
+    }
+
+    const statuses = ["pending","paid","processing","shipped","delivered"];
+
+    orders.forEach(order=>{
+      const div = document.createElement("div");
+      div.classList.add("order-card");
+
+      const currentIndex = statuses.indexOf(order.status);
+      let progressHTML = '<div class="order-progress">';
+      statuses.forEach((s,i)=>{
+        progressHTML += `<div class="order-step ${i<=currentIndex?"active":""}">${s}</div>`;
+      });
+      progressHTML += '</div>';
+
+      div.innerHTML = `
+        <p><strong>Order:</strong> ${order._id}</p>
+        <p><strong>Total:</strong> R${order.totalAmount}</p>
+        <p><strong>Shipping Address:</strong> ${order.shippingAddress || "Pending"}</p>
+        <p><strong>Carrier:</strong> ${order.shippingCarrier || "N/A"}</p>
+        <p><strong>Tracking #:</strong> ${order.trackingNumber || "N/A"}</p>
+        ${progressHTML}
+      `;
+      list.appendChild(div);
+    });
+
+  }catch(err){
+    console.error(err);
+    document.getElementById("orders-list").innerHTML="<p>Failed to load orders</p>";
+  }
+}
+
+/* -------------------------
+TRACK ORDER
+--------------------------*/
+async function trackOrder(){
+  const orderId = document.getElementById("track-order-id").value.trim();
+  if(!orderId){ alert("Enter an order ID"); return; }
+
+  try{
+    const res = await fetch(`${API_URL}/orders/${orderId}/verify`,{
+      headers:{ Authorization:`Bearer ${token}` }
+    });
+    const data = await res.json();
+    if(!data.success){ alert(data.message || "Order not found"); return; }
+
+    const statuses = ["pending","paid","processing","shipped","delivered"];
+    const currentIndex = statuses.indexOf(data.status);
+    let progressHTML = '<div class="order-progress">';
+    statuses.forEach((s,i)=>{
+      progressHTML += `<div class="order-step ${i<=currentIndex?"active":""}">${s}</div>`;
+    });
+    progressHTML += '</div>';
+
+    document.getElementById("track-result").innerHTML = `
+      <p><strong>Status:</strong> ${data.status}</p>
+      <p><strong>Carrier:</strong> ${data.shippingCarrier || "N/A"}</p>
+      <p><strong>Tracking #:</strong> ${data.trackingNumber || "N/A"}</p>
+      ${progressHTML}
+    `;
+  }catch(err){
+    console.error(err);
+    alert("Failed to fetch order tracking");
+  }
+}
+
+/* -------------------------
+LOAD RETURNS
+--------------------------*/
+async function loadReturns(userId){
+  try{
+    const res = await fetch(`${API_URL}/returns/user/${userId}`,{
+      headers:{ Authorization:`Bearer ${token}` }
+    });
+    const returns = await res.json();
+    const list = document.getElementById("returns-list");
+    list.innerHTML = "";
+
+    if(returns.length===0){
+      list.innerHTML="<li>No return requests yet</li>";
+      return;
+    }
+
+    returns.forEach(r=>{
+      const li = document.createElement("li");
+      li.textContent = `Order ${r.orderId} - ${r.reason} - ${r.status}`;
+      list.appendChild(li);
+    });
+  }catch(err){
+    console.error(err);
+  }
+}
+
+/* -------------------------
+REQUEST RETURN
+--------------------------*/
+async function requestReturn(){
+  const orderId = document.getElementById("return-order-id").value;
+  const reason = document.getElementById("return-reason").value;
+
+  if(!orderId || !reason){
+    alert("Please fill all fields");
+    return;
+  }
+
+  try{
+    const res = await fetch(`${API_URL}/returns`,{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        Authorization:`Bearer ${token}`
+      },
+      body:JSON.stringify({ orderId, reason })
+    });
+    await res.json();
+    alert("Return request submitted");
+
+    document.getElementById("return-order-id").value="";
+    document.getElementById("return-reason").value="";
+    loadProfile();
+  }catch(err){
+    console.error(err);
+    alert("Failed to submit return");
+  }
+}
+
+/* -------------------------
+LOGOUT
+--------------------------*/
+function logoutUser(){
+  localStorage.removeItem("azaniaToken");
+  localStorage.removeItem("azaniaUser");
+  window.location.href="login.html";
+}
+
+/* -------------------------
+INIT
+--------------------------*/
+document.addEventListener("DOMContentLoaded",loadProfile);
+</script>
+  <footer class="azania-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <img src="A.jpg" alt="Azania Marketplace" onerror="this.style.display='none'">
+        <strong>Azania Marketplace</strong>
+        <p>Discover local brands and shop unique South African fashion.</p>
+      </div>
+      <nav class="footer-links" aria-label="Footer">
+        <a href="index.html">Home</a>
+        <a href="dashboard.html">Shop</a>
+        <a href="about.html">About</a>
+        <a href="Contact.html">Contact</a>
+        <a href="signup.html">Sign Up</a>
+      </nav>
+      <div class="footer-legal">&copy; 2026 Azania Marketplace. All rights reserved.</div>
+    </div>
+  </footer>
+</body>
+</html>

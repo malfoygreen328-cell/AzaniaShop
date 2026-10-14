@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up - Azania Marketplace</title>
+  <style>
+    body {
+      background-image: url('bottle.jpg');
+      font-family: 'Segoe UI', Arial, sans-serif;
+      color: #043927;
+    }
+
+    .container {
+      max-width: 400px;
+      margin: 120px auto 50px;
+      padding: 20px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    input {
+      width: 95%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #043927;
+      color: #fff;
+      font-weight: 600;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background: #056848;
+    }
+
+    .login-link {
+      display: block;
+      text-align: center;
+      margin-top: 15px;
+      color: #06553d;
+      text-decoration: none;
+    }
+
+    .login-link:hover {
+      text-decoration: underline;
+    }
+
+    .form-message {
+      margin-top: 0.75rem;
+      text-align: center;
+      font-size: 0.9rem;
+      color: #b00020;
+    }
+  
+    /* ============ SHARED FOOTER ============ */
+    .azania-footer {
+      background: #043927;
+      color: #e6f0ea;
+      margin-top: 50px;
+      padding: 2rem 1.5rem 1.25rem;
+    }
+
+    .azania-footer .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      align-items: center;
+      text-align: center;
+    }
+
+    .azania-footer .footer-brand img {
+      height: 44px;
+      display: block;
+      margin: 0 auto 0.4rem;
+      border-radius: 6px;
+    }
+
+    .azania-footer .footer-brand strong {
+      display: block;
+      color: #fff;
+      font-size: 1.1rem;
+    }
+
+    .azania-footer .footer-brand p {
+      margin: 0.4rem 0 0;
+      font-size: 0.9rem;
+      color: #b8d4c6;
+      max-width: 320px;
+    }
+
+    .azania-footer .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem 1.25rem;
+      justify-content: center;
+    }
+
+    .azania-footer .footer-links a {
+      color: #e6f0ea;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    .azania-footer .footer-links a:hover {
+      color: #fff;
+      text-decoration: underline;
+    }
+
+    .azania-footer .footer-legal {
+      font-size: 0.8rem;
+      color: #9fb9ac;
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      padding-top: 1rem;
+      width: 100%;
+      text-align: center;
+    }
+
+    @media (min-width: 768px) {
+      .azania-footer .footer-inner {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: flex-start;
+        text-align: left;
+      }
+
+      .azania-footer .footer-brand img {
+        margin: 0 0 0.4rem;
+      }
+
+      .azania-footer .footer-links {
+        justify-content: flex-end;
+      }
+    }
+</style>
+</head>
+
+<body>
+  <div class="container">
+    <h2>Create Your Account</h2>
+    <form id="signup-form">
+      <input type="text" name="name" placeholder="Full Name" required>
+      <input type="email" name="email" placeholder="Email" required>
+      <input type="password" name="password" placeholder="Password" required>
+      <button type="submit">Sign Up</button>
+      <p id="signupMessage" class="form-message" role="status" aria-live="polite"></p>
+    </form>
+    <a href="login.html" class="login-link">Already have an account? Login</a>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/recaptcha.js"></script>
+  <script>
+    const form = document.getElementById('signup-form');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const messageEl = document.getElementById('signupMessage');
+
+    // Warm up the reCAPTCHA script (no-op until a site key is configured).
+    AzaniaRecaptcha.preload();
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // Guard against duplicate submissions (e.g. double-click / Enter).
+      if (submitBtn.disabled) return;
+
+      const payload = {
+        name: form.name.value,
+        email: form.email.value,
+        password: form.password.value
+      };
+
+      AzaniaRecaptcha.setMessage(messageEl, "", false);
+      AzaniaRecaptcha.setLoading(submitBtn, true);
+
+      try {
+        // A fresh reCAPTCHA token (action: customer_register) is generated right
+        // before this request and sent to the backend as `recaptchaToken`.
+        const { response, data } = await AzaniaRecaptcha.submitProtected({
+          action: 'customer_register',
+          url: 'https://api.azaniashop.co.za/api/auth/register',
+          payload: payload
+        });
+
+        if (response.ok) {
+          alert('Signup successful! You can now login.');
+          window.location.href = 'login.html';
+          return;
+        }
+
+        AzaniaRecaptcha.setMessage(messageEl, (data && data.message) || 'Signup failed.', true);
+
+      } catch (err) {
+        AzaniaRecaptcha.setMessage(messageEl, AzaniaRecaptcha.friendlyError(err), true);
+      } finally {
+        // Restore the button so the user can retry; form values are preserved.
+        AzaniaRecaptcha.setLoading(submitBtn, false);
+      }
+    });
+  </script>
+  <footer class="azania-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <img src="A.jpg" alt="Azania Marketplace" onerror="this.style.display='none'">
+        <strong>Azania Marketplace</strong>
+        <p>Discover local brands and shop unique South African fashion.</p>
+      </div>
+      <nav class="footer-links" aria-label="Footer">
+        <a href="index.html">Home</a>
+        <a href="dashboard.html" data-requires-auth="1">Shop</a>
+        <a href="about.html">About</a>
+        <a href="Contact.html">Contact</a>
+        <a href="signup.html">Sign Up</a>
+      </nav>
+      <div class="footer-legal">&copy; 2026 Azania Marketplace. All rights reserved.</div>
+    </div>
+  </footer>
+  <script>
+    // Footer links that lead to account-only areas require sign-in first.
+    (function () {
+      var isAuthed = function () {
+        return !!(localStorage.getItem("azaniaToken") || localStorage.getItem("token"));
+      };
+      document.querySelectorAll("[data-requires-auth]").forEach(function (link) {
+        link.addEventListener("click", function (e) {
+          if (!isAuthed()) {
+            e.preventDefault();
+            window.location.href = "login.html?next=" + encodeURIComponent(link.getAttribute("href"));
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+
+</html>

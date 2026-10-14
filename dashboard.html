@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Azania Marketplace</title>
+
+<style>
+* { box-sizing:border-box; margin:0; padding:0; font-family:'Segoe UI', Arial, sans-serif;}
+body {background:#fff; color:#111;}
+
+/* NAVBAR */
+:root {
+    --azania-navbar-bg:#043927;
+    --azania-logo-color:#edbd6d;
+    --azania-logo-width:44px;
+}
+
+.navbar {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:var(--azania-navbar-bg);
+    padding:0.6rem 1rem;
+    color:white;
+    position:fixed;
+    width:100%;
+    top:0;
+    z-index:1000;
+}
+.nav-left, .nav-center, .nav-right {display:flex; align-items:center; gap:10px;}
+.nav-left {flex:1; justify-content:flex-start;}
+.nav-center {flex:1; justify-content:center;}
+.nav-right {flex:1; justify-content:flex-end; gap:0.6rem;}
+
+.logo {width:45px; cursor:pointer;}
+
+.azania-logo {
+    display:block;
+    width:var(--azania-logo-width);
+    max-width:100%;
+    height:auto;
+    color:var(--azania-logo-color);
+}
+
+@media screen and (max-width:600px) {
+    :root { --azania-logo-width:36px; }
+}
+.hamburger {font-size:1.8rem; cursor:pointer; background:none; border:none; color:white; display:block;}
+
+#language-select {
+    border-radius:5px;
+    border:none;
+    padding:0.25rem 0.4rem;
+    min-width:90px;
+    max-width:110px;
+    font-size:0.85rem;
+    cursor: pointer;
+}
+
+#language-select:hover {
+    background-color: #f0f0f0;
+}
+
+#searchInput {padding:0.5rem; border-radius:6px; border:none; width:250px; max-width:50vw;}
+.icon-btn {background:#056848; border:none; padding:0.5rem; border-radius:6px; cursor:pointer; color:white;}
+.icon-btn:hover {background:#03291c;}
+
+/* LAYOUT */
+.container {display:flex; margin-top:70px;}
+
+/* SIDEBAR */
+.sidebar {width:220px; background:#043927; padding:1rem; height:calc(100vh-70px); position:sticky; top:70px; transition:transform 0.3s ease;}
+.sidebar h3 {margin-bottom:1rem; color:white;}
+.sidebar a {display:block; margin-bottom:0.7rem; text-decoration:none; color:white; font-weight:500; cursor:pointer;}
+.sidebar a:hover {color:#b0e0a8;}
+
+/* MAIN */
+main {flex:1; padding:1rem; max-width:1200px;}
+
+/* SLIDER */
+.slider {position:relative; overflow:hidden; border-radius:12px; margin-bottom:20px;}
+.slides {display:flex; transition:transform 0.5s ease;}
+.slide {min-width:100%;}
+.slide img {width:100%; height:350px; object-fit:cover;}
+.slider-btn {position:absolute; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.5); border:none; color:white; font-size:2rem; cursor:pointer;}
+.prev {left:10px;} .next {right:10px;}
+
+/* PRODUCTS */
+.products-grid {display:grid; grid-template-columns:repeat(auto-fill, minmax(220px,1fr)); gap:20px;}
+.product-card {border:1px solid #ddd; border-radius:10px; padding:0.7rem; transition: transform 0.2s, box-shadow 0.2s;}
+.product-card:hover {transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1);}
+.product-card img {width:100%; height:200px; object-fit:cover; border-radius:8px;}
+.product-title {font-weight:600; margin:0.5rem 0;}
+.product-price {color:#043927; font-weight:bold; font-size:1.1rem;}
+.product-stock {font-size:0.8rem; color:#666; margin-top:5px;}
+.add-cart-btn {margin-top:0.5rem; background:#043927; color:white; border:none; padding:0.5rem; border-radius:6px; cursor:pointer; width:100%; transition: background 0.2s;}
+.add-cart-btn:hover {background:#03291c;}
+
+.loading, .error {text-align: center; padding: 40px; font-size: 1.1rem;}
+.error {color: #d32f2f;}
+.loading {color: #043927;}
+
+/* =========================
+   FLOATING CHAT
+========================= */
+
+/* chat button */
+#chat-bubble {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 55px;
+    height: 55px;
+    background: #043927;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    cursor: pointer;
+    z-index: 3000;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    transition: transform 0.2s;
+}
+#chat-bubble:hover {transform: scale(1.1);}
+
+/* chat window */
+#chat-widget {
+    position: fixed;
+    bottom: 90px;
+    right: 20px;
+    width: 300px;
+    background: white;
+    color: #333;
+    border-radius: 12px;
+    overflow: hidden;
+    z-index: 3000;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+    font-size: 0.85rem;
+}
+
+/* hide */
+.hidden { display:none; }
+
+/* header */
+#chat-header {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:12px;
+    background:#043927;
+    color: white;
+    font-weight:bold;
+}
+
+#minimize-chat {
+    background:none;
+    border:none;
+    color:white;
+    font-size:20px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+/* messages */
+#chat-messages {
+    height:250px;
+    overflow-y:auto;
+    padding:12px;
+    background: #f9f9f9;
+}
+
+#chat-messages div {
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+
+#chat-messages strong {
+    color: #043927;
+}
+
+/* input */
+#chat-input-area {
+    border-top: 1px solid #ddd;
+    background: white;
+}
+
+#chat-input {
+    width:100%;
+    border: none;
+    padding:12px;
+    font-size:0.85rem;
+    outline:none;
+}
+
+/* RESPONSIVE */
+@media screen and (max-width:900px){
+    .sidebar {position:fixed; left:0; top:70px; transform:translateX(-100%); z-index:999;}
+    .sidebar.show {transform:translateX(0);}
+    .container {flex-direction:column;}
+    main {max-width:100%;}
+    #searchInput {width:150px;}
+    #chat-widget {width: 280px; right: 10px; bottom: 80px;}
+    #chat-bubble {right: 10px; bottom: 10px;}
+}
+
+    /* ============ SHARED FOOTER ============ */
+    .azania-footer {
+      background: #043927;
+      color: #e6f0ea;
+      margin-top: 50px;
+      padding: 2rem 1.5rem 1.25rem;
+    }
+
+    .azania-footer .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      align-items: center;
+      text-align: center;
+    }
+
+    .azania-footer .footer-brand img {
+      height: 44px;
+      display: block;
+      margin: 0 auto 0.4rem;
+      border-radius: 6px;
+    }
+
+    .azania-footer .footer-brand strong {
+      display: block;
+      color: #fff;
+      font-size: 1.1rem;
+    }
+
+    .azania-footer .footer-brand p {
+      margin: 0.4rem 0 0;
+      font-size: 0.9rem;
+      color: #b8d4c6;
+      max-width: 320px;
+    }
+
+    .azania-footer .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem 1.25rem;
+      justify-content: center;
+    }
+
+    .azania-footer .footer-links a {
+      color: #e6f0ea;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    .azania-footer .footer-links a:hover {
+      color: #fff;
+      text-decoration: underline;
+    }
+
+    .azania-footer .footer-legal {
+      font-size: 0.8rem;
+      color: #9fb9ac;
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      padding-top: 1rem;
+      width: 100%;
+      text-align: center;
+    }
+
+    @media (min-width: 768px) {
+      .azania-footer .footer-inner {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: flex-start;
+        text-align: left;
+      }
+
+      .azania-footer .footer-brand img {
+        margin: 0 0 0.4rem;
+      }
+
+      .azania-footer .footer-links {
+        justify-content: flex-end;
+      }
+    }
+</style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<header class="navbar">
+    <div class="nav-left">
+        <button class="hamburger" id="hamburger-btn">☰</button>
+
+        <select id="language-select">
+            <option value="en">🇬🇧 English</option>
+            <option value="zu">🇿🇦 isiZulu</option>
+            <option value="xh">🇿🇦 isiXhosa</option>
+            <option value="tn">🇿🇦 Setswana</option>
+            <option value="ve">🇿🇦 Tshivenḓa</option>
+            <option value="nr">🇿🇦 isiNdebele</option>
+            <option value="st">🇿🇦 Sesotho</option>
+            <option value="nso">🇿🇦 Sepedi</option>
+            <option value="af">🇿🇦 Afrikaans</option>
+        </select>
+    </div>
+
+    <div class="nav-center">
+      <a href="index.html" aria-label="Azania Marketplace home">
+        <svg class="azania-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 274 290" role="img" aria-label="Azania Marketplace">
+          <g fill="currentColor">
+            <path d="M 130.5 23 L 136.5 23 L 137.5 24 L 143.5 24 L 144.5 25 L 151.5 26 Q 164.5 31.5 173 41.5 L 177 47.5 L 183 61.5 Q 182 65.5 184 66.5 L 184 75 L 224.5 75 L 229 78.5 L 230 80.5 L 230 91.5 L 231 92.5 L 232 112.5 L 233 113.5 L 234 133.5 L 235 134.5 L 235 144.5 L 236 145.5 L 237 165.5 L 238 166.5 L 239 186.5 L 240 187.5 L 240 197.5 L 241 198.5 L 241 208.5 L 242 209.5 L 242 217.5 L 243 218.5 L 243 227.5 L 244 228.5 L 244 237.5 L 245 238.5 L 245 248.5 L 246 249.5 L 246 257.5 Q 247.7 258.2 247 261.5 L 244 269.5 L 239.5 274 L 233.5 277 L 35.5 277 L 30.5 275 L 25 270.5 L 22 264.5 L 22 253.5 L 23 252.5 L 24 233.5 L 25 232.5 L 25 223.5 L 26 222.5 L 26 212.5 L 27 211.5 L 27 201.5 L 28 200.5 L 29 182.5 L 30 181.5 L 30 171.5 L 31 170.5 L 31 162.5 L 32 161.5 L 33 139.5 L 34 138.5 L 35 118.5 L 36 117.5 L 36 107.5 L 37 106.5 L 37 97.5 L 38 96.5 L 38 83.5 Q 39.8 82.8 39 79.5 L 42.5 76 L 44.5 75 L 84 75 L 84 68.5 L 85 67.5 L 85 63.5 L 86 62.5 L 87 56.5 L 94 43.5 L 103.5 34 L 114.5 27 L 120.5 25 L 123.5 25 L 124.5 24 L 129.5 24 L 130.5 23 Z M 129 35 L 124 37 L 121 37 L 111 43 L 104 50 L 98 61 L 96 67 L 96 75 L 172 75 L 173 74 L 172 71 L 172 65 L 170 59 L 162 47 Q 156 41 148 37 L 142 36 L 141 35 L 129 35 Z M 50 86 L 50 92 L 49 93 L 49 102 L 48 103 L 48 112 L 47 113 L 47 123 L 46 124 L 46 134 L 45 135 L 44 155 L 43 156 L 43 165 L 42 166 L 42 175 L 41 176 L 40 197 L 39 198 L 39 208 L 38 209 L 38 218 L 37 219 L 37 229 L 36 230 L 36 239 L 35 240 L 35 250 L 34 251 L 34 262 L 35 264 L 39 266 L 230 266 L 232 265 L 235 261 L 234 248 L 233 247 L 232 226 L 231 225 L 230 204 L 229 203 L 229 193 L 228 192 L 228 183 L 227 182 L 227 173 L 226 172 L 226 163 L 225 162 L 225 152 L 224 151 L 224 141 L 223 140 L 223 130 L 222 129 L 222 119 L 221 118 L 221 108 L 220 107 L 220 98 L 219 97 L 219 88 L 218 86 L 50 86 Z " />
+            <path d="M 89.5 96 Q 90.3 97.7 93.5 97 L 96 99.5 Q 97.8 101.7 97 106.5 L 93.5 111 L 88.5 112 L 84 110 Q 84.5 107.5 82 106.5 L 82 102.5 L 86.5 97 L 89.5 96 Z " />
+            <path d="M 175.5 97 Q 183.3 95.2 185 99.5 Q 186.8 101.7 186 106.5 L 182.5 111 L 178.5 112 L 175.5 111 L 172 107.5 L 171 102.5 L 175.5 97 Z " />
+            <path d="M 131.5 129 L 137.5 129 L 138 130.5 L 146 146.5 L 149 155.5 L 155 166.5 L 155 168.5 L 163 184.5 L 163 186.5 L 167 193.5 L 167 195.5 L 173 206.5 L 173 208.5 L 181 224.5 L 181 227 L 173.5 227 L 172.5 226 L 169.5 227 L 167 226 L 167 223.5 L 163 216.5 L 163 214.5 L 154.5 198 L 113.5 198 L 113 199.5 L 108 208.5 L 108 210.5 L 104 217.5 L 104 219.5 L 99.5 227 L 88.5 227 L 87 225.5 L 101 196.5 L 101 194.5 L 107 183.5 L 107 181.5 L 118 158.5 L 118 156.5 L 123 147.5 L 123 145.5 L 128 136.5 L 128 134.5 L 131.5 129 Z M 135 151 L 132 155 L 132 157 L 118 186 L 119 187 L 150 187 L 150 185 L 147 180 L 147 178 L 135 151 Z " />
+          </g>
+        </svg>
+      </a>
+    </div>
+
+    <div class="nav-right">
+        <input type="text" id="searchInput" placeholder="Search products...">
+        <button class="icon-btn" onclick="location.href='cart.html'">🛒</button>
+        <button class="icon-btn" onclick="location.href='ACC.html'">👤</button>
+    </div>
+</header>
+
+<!-- LAYOUT -->
+<div class="container">
+
+    <aside class="sidebar" id="sidebar">
+        <h3 id="categories-title">Categories</h3>
+        <a id="cat-all" onclick="filterCategory('all')">All</a>
+        <a id="cat-clothing" onclick="filterCategory('clothing')">Clothing</a>
+        <a id="cat-shoes" onclick="filterCategory('shoes')">Shoes</a>
+        <a id="cat-accessories" onclick="filterCategory('accessories')">Accessories</a>
+        <a id="cat-new" onclick="filterCategory('new')">New Arrivals</a>
+    </aside>
+
+    <main>
+        <section class="slider">
+            <div class="slides" id="slides">
+                <div class="slide"><img src="Azania.png" alt="Azania Banner 1"></div>
+                <div class="slide"><img src="Azania.png" alt="Azania Banner 2"></div>
+                <div class="slide"><img src="Azania.png" alt="Azania Banner 3"></div>
+            </div>
+            <button class="slider-btn prev" id="prev">❮</button>
+            <button class="slider-btn next" id="next">❯</button>
+        </section>
+
+        <section class="products-grid" id="products">
+            <div class="loading">Loading products...</div>
+        </section>
+    </main>
+</div>
+
+<!-- ================= FLOATING CHAT ================= -->
+<div id="chat-bubble">💬</div>
+
+<div id="chat-widget" class="hidden">
+    <div id="chat-header">
+        <span id="chat-title">🤖 Azania AI Assistant</span>
+        <button id="minimize-chat">−</button>
+    </div>
+
+    <div id="chat-messages">
+        <div id="welcome-message"><strong>AI:</strong> Hello! Welcome to Azania Marketplace! How can I help you today?</div>
+    </div>
+
+    <div id="chat-input-area">
+        <input id="chat-input" type="text" placeholder="Ask about products, prices, shipping..." />
+    </div>
+</div>
+
+<script>
+// ============================================
+// MULTI-LANGUAGE TRANSLATIONS
+// ============================================
+const translations = {
+    en: {
+        // Navbar
+        search_placeholder: "Search products...",
+        
+        // Sidebar
+        categories: "Categories",
+        all: "All",
+        clothing: "Clothing",
+        shoes: "Shoes",
+        accessories: "Accessories",
+        new_arrivals: "New Arrivals",
+        
+        // Product card
+        in_stock: "In Stock",
+        out_of_stock: "Out of Stock",
+        add_to_cart: "Add to Cart 🛒",
+        out_of_stock_btn: "Out of Stock",
+        
+        // Loading/Error
+        loading: "Loading products...",
+        error_title: "⚠️ Error loading products",
+        try_again: "Try Again",
+        no_products: "No products found.",
+        
+        // Chat
+        chat_title: "🤖 Azania AI Assistant",
+        chat_placeholder: "Ask about products, prices, shipping...",
+        ai_typing: "AI is typing...",
+        welcome_message: "Hello! Welcome to Azania Marketplace! How can I help you today?"
+    },
+    zu: { // isiZulu
+        search_placeholder: "Sesha imikhiqizo...",
+        categories: "Izigaba",
+        all: "Konke",
+        clothing: "Izingubo",
+        shoes: "Izigqoko",
+        accessories: "Izesekeli",
+        new_arrivals: "Okusha Okufikile",
+        in_stock: "Kusenthengisweni",
+        out_of_stock: "Akusenthengisweni",
+        add_to_cart: "Faka Engoleni 🛒",
+        out_of_stock_btn: "Akusenthengisweni",
+        loading: "Ikulayisha imikhiqizo...",
+        error_title: "⚠️ Inkinga ekulayisheni imikhiqizo",
+        try_again: "Zama Futhi",
+        no_products: "Ayikho imikhiqizo etholakalayo.",
+        chat_title: "🤖 Azania AI Umsizi",
+        chat_placeholder: "Buza ngemikhiqizo, amanani, ukuthumela...",
+        ai_typing: "I-AI iyabhala...",
+        welcome_message: "Sawubona! Siyakwamukela e-Azania Marketplace! Ngingakusiza ngani namuhla?"
+    },
+    xh: { // isiXhosa
+        search_placeholder: "Khangela iimveliso...",
+        categories: "Iindidi",
+        all: "Konke",
+        clothing: "Iimpahla",
+        shoes: "Izihlangu",
+        accessories: "Izixhobo",
+        new_arrivals: "Izinto Ezintsha",
+        in_stock: "Ikhoyo",
+        out_of_stock: "Ayikho",
+        add_to_cart: "Faka Kwinqwelwana 🛒",
+        out_of_stock_btn: "Ayikho EsiXhoseni",
+        loading: "Kulayishwa iimveliso...",
+        error_title: "⚠️ Impazamo ekulayisheni iimveliso",
+        try_again: "Zama Kwakhona",
+        no_products: "Azikho iimveliso ezifumanekayo.",
+        chat_title: "🤖 Azania AI Uncedisi",
+        chat_placeholder: "Buza ngeemveliso, amaxabiso, ukuthunyelwa...",
+        ai_typing: "I-AI iyabhala...",
+        welcome_message: "Molo! Wamkelekile kwi-Azania Marketplace! Ndingakunceda njani namhlanje?"
+    },
+    tn: { // Setswana
+        search_placeholder: "Batla didirišwa...",
+        categories: "Ditlhopha",
+        all: "Tsotlhe",
+        clothing: "Diaparo",
+        shoes: "Ditlhako",
+        accessories: "Didirišwa",
+        new_arrivals: "Tse disha",
+        in_stock: "Di teng",
+        out_of_stock: "Ga di teng",
+        add_to_cart: "Tsenya mo Kariking 🛒",
+        out_of_stock_btn: "Ga di teng",
+        loading: "Di loada didirišwa...",
+        error_title: "⚠️ Phoso mo go loadeng didirišwa",
+        try_again: "Leka Gape",
+        no_products: "Ga go na didirišwa tse di fitlhelegang.",
+        chat_title: "🤖 Azania AI Mothusi",
+        chat_placeholder: "Botse ka didirišwa, ditlhwatlhwa, go romela...",
+        ai_typing: "AI e a kwala...",
+        welcome_message: "Dumela! O amogetswe mo Azania Marketplace! Nka go thusa jang gompieno?"
+    },
+    ve: { // Tshivenḓa
+        search_placeholder: "Sinya zwibveledzwa...",
+        categories: "Zwikela",
+        all: "Zwoṱhe",
+        clothing: "Nguvho",
+        shoes: "Vhutu",
+        accessories: "Zwiambaro",
+        new_arrivals: "Zwiswa",
+        in_stock: "Zwi hone",
+        out_of_stock: "A zwi hone",
+        add_to_cart: "Isa Tshigolokisi 🛒",
+        out_of_stock_btn: "A zwi hone",
+        loading: "Zwi khou loadwa...",
+        error_title: "⚠️ Vhukhakhi ha u loada zwibveledzwa",
+        try_again: "Edzani Hafhu",
+        no_products: "A hu na zwibveledzwa zwifunwaho.",
+        chat_title: "🤖 Azania AI Muthusi",
+        chat_placeholder: "Vhudzisa nga zwibveledzwa, maitele, u rumela...",
+        ai_typing: "AI i khou ṅwala...",
+        welcome_message: "Ndaa! Wa tanganedzwa kha Azania Marketplace! Ndi nga ni thusa hani nahuno?"
+    },
+    nr: { // isiNdebele
+        search_placeholder: "Sesha imikhiqizo...",
+        categories: "Izigaba",
+        all: "Konkhe",
+        clothing: "Izigqizo",
+        shoes: "Izigabha",
+        accessories: "Izesekeli",
+        new_arrivals: "Ezintsha",
+        in_stock: "Ikhona",
+        out_of_stock: "Ayikho",
+        add_to_cart: "Faka Enqoleni 🛒",
+        out_of_stock_btn: "Ayikho",
+        loading: "Ikulayisha imikhiqizo...",
+        error_title: "⚠️ Iphutha ekulayisheni imikhiqizo",
+        try_again: "Zama Futhi",
+        no_products: "Ayikho imikhiqizo etholakalayo.",
+        chat_title: "🤖 Azania AI Umsizi",
+        chat_placeholder: "Buza ngemikhiqizo, amanani, ukuthumela...",
+        ai_typing: "I-AM iyabhala...",
+        welcome_message: "Sawubona! Siyakwamukela e-Azania Marketplace! Ngingakusiza ngani lamuhla?"
+    },
+    st: { // Sesotho
+        search_placeholder: "Batla lihlahiswa...",
+        categories: "Mekha",
+        all: "Tsohle",
+        clothing: "Liaparo",
+        shoes: "Lieta",
+        accessories: "Lisebelisoa",
+        new_arrivals: "Tse ncha",
+        in_stock: "E teng",
+        out_of_stock: "Ha e yo",
+        add_to_cart: "Kenya Ka Kariking 🛒",
+        out_of_stock_btn: "Ha e yo",
+        loading: "E jarolla lihlahiswa...",
+        error_title: "⚠️ Phoso ha e jarolla lihlahiswa",
+        try_again: "Leka Hape",
+        no_products: "Ha ho na lihlahiswa tse fumanehang.",
+        chat_title: "🤖 Azania AI Mothusi",
+        chat_placeholder: "Botsa ka lihlahiswa, ditheko, ho romela...",
+        ai_typing: "AI e a ngola...",
+        welcome_message: "Lumela! Rea u amohela ho Azania Marketplace! Nka u thusa joang kajeno?"
+    },
+    nso: { // Sepedi / Northern Sotho
+        search_placeholder: "Batla dihlahiswa...",
+        categories: "Dihlopha",
+        all: "Ka moka",
+        clothing: "Diaparo",
+        shoes: "Dieta",
+        accessories: "Didirišwa",
+        new_arrivals: "Tše mpsha",
+        in_stock: "Di gona",
+        out_of_stock: "Ga di gona",
+        add_to_cart: "Tsenya Ka Kariking 🛒",
+        out_of_stock_btn: "Ga di gona",
+        loading: "Di loada dihlahiswa...",
+        error_title: "⚠️ Phošo ya go loada dihlahiswa",
+        try_again: "Leka Gape",
+        no_products: "Ga go na dihlahiswa tšeo di hwetšagalago.",
+        chat_title: "🤖 Azania AI Mothuši",
+        chat_placeholder: "Botšiša ka dihlahiswa, ditheko, go roma...",
+        ai_typing: "AI e a ngwala...",
+        welcome_message: "Thobela! O amogetšwe go Azania Marketplace! Nka go thuša bjang lehono?"
+    },
+    af: { // Afrikaans
+        search_placeholder: "Soek produkte...",
+        categories: "Kategorieë",
+        all: "Alles",
+        clothing: "Klere",
+        shoes: "Skoene",
+        accessories: "Bymakersels",
+        new_arrivals: "Nuwe Aankomste",
+        in_stock: "Op Voorraad",
+        out_of_stock: "Uit Voorraad",
+        add_to_cart: "Voeg By Mandjie 🛒",
+        out_of_stock_btn: "Uit Voorraad",
+        loading: "Laai produkte...",
+        error_title: "⚠️ Fout met laai van produkte",
+        try_again: "Probeer Weer",
+        no_products: "Geen produkte gevind nie.",
+        chat_title: "🤖 Azania AI Assistent",
+        chat_placeholder: "Vra oor produkte, pryse, aflewering...",
+        ai_typing: "AI tik...",
+        welcome_message: "Hallo! Welkom by Azania Marketplace! Hoe kan ek jou vandag help?"
+    }
+};
+
+// Current language
+let currentLanguage = localStorage.getItem('language') || 'en';
+
+// Function to update all UI text based on selected language
+function updateLanguage(lang) {
+    currentLanguage = lang;
+    localStorage.setItem('language', lang);
+    
+    const t = translations[lang];
+    if (!t) return;
+    
+    // Update search placeholder
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) searchInput.placeholder = t.search_placeholder;
+    
+    // Update sidebar
+    document.getElementById('categories-title').textContent = t.categories;
+    document.getElementById('cat-all').textContent = t.all;
+    document.getElementById('cat-clothing').textContent = t.clothing;
+    document.getElementById('cat-shoes').textContent = t.shoes;
+    document.getElementById('cat-accessories').textContent = t.accessories;
+    document.getElementById('cat-new').textContent = t.new_arrivals;
+    
+    // Update chat
+    document.getElementById('chat-title').textContent = t.chat_title;
+    document.getElementById('chat-input').placeholder = t.chat_placeholder;
+    
+    // Update welcome message (don't override if there are existing messages)
+    const welcomeDiv = document.getElementById('welcome-message');
+    if (welcomeDiv && chatMessages.children.length === 1) {
+        welcomeDiv.innerHTML = `<strong>AI:</strong> ${t.welcome_message}`;
+    }
+    
+    // Re-render products to update button texts
+    if (allProducts.length > 0) {
+        renderProducts(allProducts);
+    }
+}
+
+// ============================================
+// PRODUCTS AND CART FUNCTIONALITY
+// ============================================
+
+// Hamburger menu
+const hamburger = document.getElementById('hamburger-btn');
+const sidebar = document.getElementById('sidebar');
+if (hamburger) {
+    hamburger.onclick = () => sidebar.classList.toggle('show');
+}
+
+// Slider functionality
+let index = 0;
+const slides = document.getElementById("slides");
+const totalSlides = document.querySelectorAll(".slide").length;
+
+if (document.getElementById("next") && document.getElementById("prev")) {
+    document.getElementById("next").onclick = () => { 
+        index = (index + 1) % totalSlides; 
+        updateSlider(); 
+    };
+    
+    document.getElementById("prev").onclick = () => { 
+        index = (index - 1 + totalSlides) % totalSlides; 
+        updateSlider(); 
+    };
+}
+
+function updateSlider() {
+    if (slides && document.querySelector(".slide")) {
+        const slideWidth = document.querySelector(".slide").clientWidth;
+        slides.style.transform = `translateX(-${slideWidth * index}px)`;
+    }
+}
+
+// Auto-slide every 4 seconds
+if (totalSlides > 0) {
+    setInterval(() => { 
+        index = (index + 1) % totalSlides; 
+        updateSlider(); 
+    }, 4000);
+}
+
+// Products data
+let allProducts = [];
+
+async function loadProducts() {
+    const container = document.getElementById("products");
+    const t = translations[currentLanguage];
+    container.innerHTML = `<div class="loading">${t.loading}</div>`;
+    
+    try {
+        const response = await fetch('/api/products');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        console.log('API Response:', result);
+        
+        if (result.success && result.data) {
+            allProducts = result.data;
+            renderProducts(allProducts);
+        } else if (Array.isArray(result)) {
+            allProducts = result;
+            renderProducts(allProducts);
+        } else {
+            throw new Error('Invalid response format from server');
+        }
+    } catch (error) {
+        console.error('Error loading products:', error);
+        container.innerHTML = `
+            <div class="error">
+                <strong>${t.error_title}</strong><br>
+                ${error.message}<br><br>
+                <button onclick="loadProducts()" style="padding: 10px 20px; background: #043927; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                    ${t.try_again}
+                </button>
+            </div>
+        `;
+    }
+}
+
+function renderProducts(products) {
+    const container = document.getElementById("products");
+    const t = translations[currentLanguage];
+    
+    if (!products || products.length === 0) {
+        container.innerHTML = `<div class="loading">${t.no_products}</div>`;
+        return;
+    }
+    
+    container.innerHTML = "";
+    products.forEach(product => {
+        const productName = product.name || 'Product Name';
+        const productPrice = product.price || 0;
+        const productImage = product.image || product.images?.[0] || 'A.jpg';
+        const productId = product._id || product.id;
+        const stock = product.stock || 0;
+        const isInStock = stock > 0;
+        
+        container.innerHTML += `
+            <div class="product-card">
+                <img src="${productImage}" alt="${productName}" onerror="this.src='A.jpg'">
+                <div class="product-title">${productName}</div>
+                <div class="product-price">R${productPrice.toFixed(2)}</div>
+                <div class="product-stock">${isInStock ? `${t.in_stock} (${stock})` : t.out_of_stock}</div>
+                <button class="add-cart-btn" onclick="addToCart('${productId}', '${productName}', ${productPrice})" ${!isInStock ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''}>
+                    ${isInStock ? t.add_to_cart : t.out_of_stock_btn}
+                </button>
+            </div>
+        `;
+    });
+}
+
+function filterCategory(category) {
+    if (category === 'all') {
+        renderProducts(allProducts);
+    } else {
+        const filtered = allProducts.filter(p => p.category === category);
+        renderProducts(filtered);
+    }
+}
+
+function addToCart(productId, productName, price) {
+    console.log('Added to cart:', { productId, productName, price });
+    
+    let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    const existingItem = cart.find(item => item.id === productId);
+    
+    if (existingItem) {
+        existingItem.quantity = (existingItem.quantity || 1) + 1;
+    } else {
+        cart.push({
+            id: productId,
+            name: productName,
+            price: price,
+            quantity: 1
+        });
+    }
+    
+    localStorage.setItem('cart', JSON.stringify(cart));
+    alert(`${productName} added to cart!`);
+    updateCartCount();
+}
+
+function updateCartCount() {
+    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+    console.log(`Cart has ${totalItems} items`);
+}
+
+// Search functionality
+const searchInput = document.getElementById('searchInput');
+if (searchInput) {
+    let searchTimeout;
+    searchInput.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        const query = e.target.value.trim();
+        
+        searchTimeout = setTimeout(() => {
+            if (query) {
+                searchProducts(query);
+            } else {
+                renderProducts(allProducts);
+            }
+        }, 300);
+    });
+}
+
+async function searchProducts(query) {
+    try {
+        const response = await fetch(`/api/products/search?q=${encodeURIComponent(query)}`);
+        const result = await response.json();
+        
+        if (result.success && result.data) {
+            renderProducts(result.data);
+        } else if (Array.isArray(result)) {
+            renderProducts(result);
+        } else {
+            renderProducts([]);
+        }
+    } catch (error) {
+        console.error('Search error:', error);
+        const filtered = allProducts.filter(p => 
+            p.name.toLowerCase().includes(query.toLowerCase()) ||
+            (p.description && p.description.toLowerCase().includes(query.toLowerCase()))
+        );
+        renderProducts(filtered);
+    }
+}
+
+// ============================================
+// CHAT SYSTEM
+// ============================================
+const bubble = document.getElementById("chat-bubble");
+const widget = document.getElementById("chat-widget");
+const minimize = document.getElementById("minimize-chat");
+const chatInput = document.getElementById("chat-input");
+const chatMessages = document.getElementById("chat-messages");
+
+if (bubble && widget) {
+    bubble.onclick = () => {
+        widget.classList.toggle("hidden");
+        if (!widget.classList.contains("hidden") && chatMessages) {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    };
+}
+
+if (minimize && widget) {
+    minimize.onclick = () => widget.classList.add("hidden");
+}
+
+function getAIResponse(message, products) {
+    const lowerMsg = message.toLowerCase();
+    const t = translations[currentLanguage];
+    
+    if (lowerMsg.includes("price") || lowerMsg.includes("cost") || lowerMsg.includes("amanani") || lowerMsg.includes("ditheko")) {
+        if (products && products.length > 0) {
+            const cheapest = Math.min(...products.map(p => p.price || 0));
+            const mostExpensive = Math.max(...products.map(p => p.price || 0));
+            return `Our products range from R${cheapest.toFixed(2)} to R${mostExpensive.toFixed(2)}. Is there a specific product you're interested in?`;
+        }
+        return "Our products range from affordable to premium prices. Check our collection for specific pricing!";
+    }
+    
+    if (lowerMsg.includes("shipping") || lowerMsg.includes("delivery") || lowerMsg.includes("ukuthumela")) {
+        return "We ship nationwide within 3-5 business days. Free shipping on orders over R500! 🚚";
+    }
+    
+    if (lowerMsg.includes("return") || lowerMsg.includes("refund")) {
+        return "We offer 30-day returns on all unused items in original packaging. Customer satisfaction is our priority! ✅";
+    }
+    
+    if (lowerMsg.includes("hello") || lowerMsg.includes("hi") || lowerMsg.includes("hey") || lowerMsg.includes("sawubona")) {
+        return t.welcome_message;
+    }
+    
+    return "Thank you for shopping at Azania! How can I help you with our African-inspired products? Feel free to ask about prices, sizes, shipping, or returns! 🌟";
+}
+
+if (chatInput && chatMessages) {
+    chatInput.addEventListener("keypress", async (e) => {
+        if (e.key === "Enter") {
+            const msg = chatInput.value.trim();
+            if (!msg) return;
+
+            const t = translations[currentLanguage];
+            
+            chatMessages.innerHTML += `<div><strong>You:</strong> ${escapeHtml(msg)}</div>`;
+            chatInput.value = "";
+            
+            chatMessages.innerHTML += `<div id="typing" style="color: #666;"><em>${t.ai_typing}</em></div>`;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            setTimeout(() => {
+                const typingIndicator = document.getElementById("typing");
+                if (typingIndicator) typingIndicator.remove();
+                
+                const reply = getAIResponse(msg, allProducts);
+                chatMessages.innerHTML += `<div><strong>🤖 AI:</strong> ${reply}</div>`;
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 500);
+        }
+    });
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// ============================================
+// LANGUAGE SELECTOR
+// ============================================
+const languageSelect = document.getElementById('language-select');
+if (languageSelect) {
+    // Set the select value to current language
+    languageSelect.value = currentLanguage;
+    
+    languageSelect.addEventListener('change', (e) => {
+        const newLang = e.target.value;
+        updateLanguage(newLang);
+        
+        // Show a brief notification
+        const notification = document.createElement('div');
+        notification.textContent = `Language changed to ${languageSelect.options[languageSelect.selectedIndex].text}`;
+        notification.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #043927;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            z-index: 10000;
+            animation: fadeOut 2s ease-out forwards;
+        `;
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 2000);
+    });
+}
+
+// Add fade out animation
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes fadeOut {
+        0% { opacity: 1; }
+        70% { opacity: 1; }
+        100% { opacity: 0; visibility: hidden; }
+    }
+`;
+document.head.appendChild(style);
+
+// ============================================
+// INITIALIZATION
+// ============================================
+async function testBackend() {
+    try {
+        const response = await fetch('/api/test');
+        if (response.ok) {
+            const data = await response.json();
+            console.log('✅ Backend connected:', data);
+        }
+    } catch (error) {
+        console.warn('⚠️ Backend connection test failed:', error.message);
+    }
+}
+
+window.onload = () => {
+    updateLanguage(currentLanguage);
+    testBackend();
+    loadProducts();
+    updateCartCount();
+};
+
+window.addEventListener('resize', () => {
+    updateSlider();
+});
+</script>
+
+  <footer class="azania-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <img src="A.jpg" alt="Azania Marketplace" onerror="this.style.display='none'">
+        <strong>Azania Marketplace</strong>
+        <p>Discover local brands and shop unique South African fashion.</p>
+      </div>
+      <nav class="footer-links" aria-label="Footer">
+        <a href="index.html">Home</a>
+        <a href="dashboard.html">Shop</a>
+        <a href="about.html">About</a>
+        <a href="Contact.html">Contact</a>
+        <a href="signup.html">Sign Up</a>
+      </nav>
+      <div class="footer-legal">&copy; 2026 Azania Marketplace. All rights reserved.</div>
+    </div>
+  </footer>
+</body>
+</html>

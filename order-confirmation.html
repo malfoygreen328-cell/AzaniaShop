@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Azania – Order Confirmation</title>
+
+<style>
+body{
+font-family:Arial,sans-serif;
+background:#043927;
+color:#333;
+display:flex;
+flex-direction:column;
+align-items:center;
+min-height:100vh;
+margin:0;
+}
+
+.confirmation-container{
+background:#fff;
+padding:30px;
+border-radius:10px;
+box-shadow:0 5px 20px rgba(0,0,0,0.15);
+max-width:500px;
+width:100%;
+margin:auto;
+}
+
+h1{
+text-align:center;
+color:#043927;
+}
+
+.order-summary{
+margin-top:20px;
+}
+
+.order-summary ul{
+list-style:none;
+padding:0;
+}
+
+.order-summary li{
+margin-bottom:8px;
+}
+
+.home-btn{
+display:block;
+margin-top:25px;
+padding:12px;
+background:#043927;
+color:white;
+text-decoration:none;
+border-radius:6px;
+text-align:center;
+font-weight:bold;
+}
+
+.home-btn:hover{
+background:#065f46;
+}
+
+    /* ============ SHARED FOOTER ============ */
+    .azania-footer {
+      background: #043927;
+      color: #e6f0ea;
+      margin-top: 50px;
+      padding: 2rem 1.5rem 1.25rem;
+    }
+
+    .azania-footer .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      align-items: center;
+      text-align: center;
+    }
+
+    .azania-footer .footer-brand img {
+      height: 44px;
+      display: block;
+      margin: 0 auto 0.4rem;
+      border-radius: 6px;
+    }
+
+    .azania-footer .footer-brand strong {
+      display: block;
+      color: #fff;
+      font-size: 1.1rem;
+    }
+
+    .azania-footer .footer-brand p {
+      margin: 0.4rem 0 0;
+      font-size: 0.9rem;
+      color: #b8d4c6;
+      max-width: 320px;
+    }
+
+    .azania-footer .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem 1.25rem;
+      justify-content: center;
+    }
+
+    .azania-footer .footer-links a {
+      color: #e6f0ea;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    .azania-footer .footer-links a:hover {
+      color: #fff;
+      text-decoration: underline;
+    }
+
+    .azania-footer .footer-legal {
+      font-size: 0.8rem;
+      color: #9fb9ac;
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      padding-top: 1rem;
+      width: 100%;
+      text-align: center;
+    }
+
+    @media (min-width: 768px) {
+      .azania-footer .footer-inner {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: flex-start;
+        text-align: left;
+      }
+
+      .azania-footer .footer-brand img {
+        margin: 0 0 0.4rem;
+      }
+
+      .azania-footer .footer-links {
+        justify-content: flex-end;
+      }
+    }
+</style>
+
+</head>
+
+<body>
+
+<div class="confirmation-container">
+
+<h1>✅ Thank You for Your Order!</h1>
+
+<p>Your order has been placed successfully.</p>
+
+<p><strong>Order ID:</strong> <span id="order-id"></span></p>
+
+<div class="order-summary">
+
+<h2>Order Summary</h2>
+
+<ul id="order-items"></ul>
+
+<p><strong>Total: R<span id="order-total">0.00</span></strong></p>
+
+</div>
+
+<div class="shipping-info">
+
+<h3>Shipping Address</h3>
+
+<p id="shipping-address"></p>
+
+</div>
+
+<a href="Dashboard.html" class="home-btn">Return to Home</a>
+
+</div>
+
+<script>
+
+/* ============================
+AZANIA API
+============================ */
+
+const API_URL = (window.location.hostname === "localhost"
+  ? "http://localhost:5000"
+  : "https://api.azaniashop.co.za") + "/api/orders";
+
+
+/* ============================
+GET TOKEN
+============================ */
+
+function getToken(){
+return localStorage.getItem("azaniaToken");
+}
+
+
+/* ============================
+GET LAST ORDER ID
+============================ */
+
+function getOrderId(){
+
+const order = JSON.parse(localStorage.getItem("lastOrder"));
+
+if(!order){
+return null;
+}
+
+return order._id;
+
+}
+
+
+/* ============================
+FETCH ORDER FROM API
+============================ */
+
+async function loadOrder(){
+
+const orderId = getOrderId();
+
+if(!orderId){
+
+alert("No recent order found.");
+
+window.location.href="Dashboard.html";
+
+return;
+
+}
+
+try{
+
+const response = await fetch(`${API_URL}/${orderId}`,{
+
+headers:{
+"Authorization":"Bearer "+getToken()
+}
+
+});
+
+if(!response.ok){
+
+throw new Error("Order fetch failed");
+
+}
+
+const order = await response.json();
+
+
+/* DISPLAY ORDER */
+
+document.getElementById("order-id").textContent = order._id || "N/A";
+
+const orderList = document.getElementById("order-items");
+const totalEl = document.getElementById("order-total");
+const shippingEl = document.getElementById("shipping-address");
+
+orderList.innerHTML="";
+
+let total = 0;
+
+order.items.forEach(item=>{
+
+const li = document.createElement("li");
+
+const itemTotal = item.price * item.quantity;
+
+li.textContent = `${item.name} (x${item.quantity}) - R${itemTotal}`;
+
+orderList.appendChild(li);
+
+total += itemTotal;
+
+});
+
+totalEl.textContent = total.toFixed(2);
+
+
+/* SHIPPING */
+
+if(typeof order.shippingAddress === "object"){
+
+shippingEl.textContent = `
+${order.shippingAddress.fullName},
+${order.shippingAddress.address},
+${order.shippingAddress.city},
+${order.shippingAddress.postal},
+${order.shippingAddress.country}
+`;
+
+}else{
+
+shippingEl.textContent = order.shippingAddress || "Not provided";
+
+}
+
+}catch(err){
+
+console.error(err);
+
+alert("Failed to load order");
+
+}
+
+}
+
+
+/* ============================
+INIT
+============================ */
+
+document.addEventListener("DOMContentLoaded",loadOrder);
+
+</script>
+
+  <footer class="azania-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <img src="A.jpg" alt="Azania Marketplace" onerror="this.style.display='none'">
+        <strong>Azania Marketplace</strong>
+        <p>Discover local brands and shop unique South African fashion.</p>
+      </div>
+      <nav class="footer-links" aria-label="Footer">
+        <a href="index.html">Home</a>
+        <a href="dashboard.html">Shop</a>
+        <a href="about.html">About</a>
+        <a href="Contact.html">Contact</a>
+        <a href="signup.html">Sign Up</a>
+      </nav>
+      <div class="footer-legal">&copy; 2026 Azania Marketplace. All rights reserved.</div>
+    </div>
+  </footer>
+</body>
+</html>

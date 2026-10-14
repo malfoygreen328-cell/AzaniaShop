@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Us | Azania Marketplace</title>
+  <style>
+    /* ===============================
+       Bottle Green Theme Styles
+    =============================== */
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #e6f0ea; /* light green background */
+      color: #043927; /* bottle green text */
+    }
+
+    header {
+      background-color: #043927;
+      color: #fff;
+      padding: 20px 0;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2em;
+    }
+
+    main {
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #f5faf5;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #043927;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+    }
+
+    input, textarea {
+      margin: 10px 0;
+      padding: 12px;
+      border-radius: 6px;
+      border: 1px solid #043927;
+      font-size: 1em;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 12px;
+      background-color: #043927;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1em;
+    }
+
+    button:hover {
+      background-color: #06553d;
+    }
+
+    /* ============ SHARED FOOTER ============ */
+    .azania-footer {
+      background: #043927;
+      color: #e6f0ea;
+      margin-top: 50px;
+      padding: 2rem 1.5rem 1.25rem;
+    }
+
+    .azania-footer .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      align-items: center;
+      text-align: center;
+    }
+
+    .azania-footer .footer-brand img {
+      height: 44px;
+      display: block;
+      margin: 0 auto 0.4rem;
+      border-radius: 6px;
+    }
+
+    .azania-footer .footer-brand strong {
+      display: block;
+      color: #fff;
+      font-size: 1.1rem;
+    }
+
+    .azania-footer .footer-brand p {
+      margin: 0.4rem 0 0;
+      font-size: 0.9rem;
+      color: #b8d4c6;
+      max-width: 320px;
+    }
+
+    .azania-footer .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem 1.25rem;
+      justify-content: center;
+    }
+
+    .azania-footer .footer-links a {
+      color: #e6f0ea;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    .azania-footer .footer-links a:hover {
+      color: #fff;
+      text-decoration: underline;
+    }
+
+    .azania-footer .footer-legal {
+      font-size: 0.8rem;
+      color: #9fb9ac;
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      padding-top: 1rem;
+      width: 100%;
+      text-align: center;
+    }
+
+    @media (min-width: 768px) {
+      .azania-footer .footer-inner {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: flex-start;
+        text-align: left;
+      }
+
+      .azania-footer .footer-brand img {
+        margin: 0 0 0.4rem;
+      }
+
+      .azania-footer .footer-links {
+        justify-content: flex-end;
+      }
+    }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      main {
+        margin: 20px;
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Contact Azania Marketplace</h1>
+  </header>
+
+  <main>
+    <h2>Get in Touch</h2>
+    <form id="contactForm">
+      <input type="text" id="name" placeholder="Your Name" required>
+      <input type="email" id="email" placeholder="Your Email" required>
+      <textarea id="message" rows="5" placeholder="Your Message" required></textarea>
+      <button type="submit">Send Message</button>
+    </form>
+    <p id="feedback" style="text-align:center; color:#06553d; margin-top:10px;"></p>
+  </main>
+
+  <footer class="azania-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <img src="A.jpg" alt="Azania Marketplace" onerror="this.style.display='none'">
+        <strong>Azania Marketplace</strong>
+        <p>Discover local brands and shop unique South African fashion.</p>
+      </div>
+      <nav class="footer-links" aria-label="Footer">
+        <a href="index.html">Home</a>
+        <a href="dashboard.html">Shop</a>
+        <a href="about.html">About</a>
+        <a href="Contact.html">Contact</a>
+        <a href="signup.html">Sign Up</a>
+      </nav>
+      <div class="footer-legal">&copy; 2026 Azania Marketplace. All rights reserved.</div>
+    </div>
+  </footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/recaptcha.js"></script>
+  <script>
+    const contactForm = document.getElementById("contactForm");
+    const contactBtn = contactForm.querySelector('button[type="submit"]');
+    const feedback = document.getElementById("feedback");
+
+    // Warm up the reCAPTCHA script (no-op until a site key is configured).
+    AzaniaRecaptcha.preload();
+
+    contactForm.addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      // Guard against duplicate submissions.
+      if (contactBtn.disabled) return;
+
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const message = document.getElementById("message").value.trim();
+
+      if (!(name && email && message)) {
+        AzaniaRecaptcha.setMessage(feedback, "Please fill in all fields.", true);
+        return;
+      }
+
+      AzaniaRecaptcha.setLoading(contactBtn, true);
+
+      // NOTE: the storefront currently has NO backend contact endpoint, so this
+      // form only shows a local confirmation. A reCAPTCHA token (action:
+      // contact_submit) is still generated so it is ready to be sent as
+      // `recaptchaToken` the moment a backend contact route is added. Until that
+      // endpoint verifies the token server-side, this form is NOT protected.
+      let payload = { name: name, email: email, message: message };
+      try {
+        payload = await AzaniaRecaptcha.withToken("contact_submit", payload);
+      } catch (err) {
+        // Best-effort: nothing is transmitted yet, so a load/token failure must
+        // not block the user. (Signup and login DO block on failure.)
+      }
+
+      // When a backend endpoint exists, POST `payload` (which includes
+      // recaptchaToken) to it here and handle the response.
+      void payload;
+
+      AzaniaRecaptcha.setMessage(feedback, "Thank you, your message has been sent!", false);
+      contactForm.reset();
+      AzaniaRecaptcha.setLoading(contactBtn, false);
+    });
+  </script>
+
+</body>
+</html>

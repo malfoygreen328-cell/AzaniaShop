@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Azania Checkout</title>
+
+<style>
+body{
+font-family:Arial,sans-serif;
+margin:0;
+padding:20px;
+background:#043927;
+}
+
+.checkout-container{
+max-width:800px;
+margin:auto;
+background:#fff;
+padding:30px;
+border-radius:10px;
+}
+
+h1,h2{
+text-align:center;
+color:#043927;
+}
+
+.billing-section input{
+width:100%;
+padding:10px;
+margin:8px 0;
+border:1px solid #ccc;
+border-radius:5px;
+}
+
+.summary-section{
+margin-top:30px;
+}
+
+#order-summary{
+list-style:none;
+padding:0;
+}
+
+button{
+margin-top:20px;
+padding:12px 30px;
+font-size:16px;
+background:#043927;
+color:white;
+border:none;
+border-radius:5px;
+cursor:pointer;
+}
+
+button:hover{
+background:#056848;
+}
+
+button:disabled{
+background:#ccc;
+cursor:not-allowed;
+}
+
+    /* ============ SHARED FOOTER ============ */
+    .azania-footer {
+      background: #043927;
+      color: #e6f0ea;
+      margin-top: 50px;
+      padding: 2rem 1.5rem 1.25rem;
+    }
+
+    .azania-footer .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      align-items: center;
+      text-align: center;
+    }
+
+    .azania-footer .footer-brand img {
+      height: 44px;
+      display: block;
+      margin: 0 auto 0.4rem;
+      border-radius: 6px;
+    }
+
+    .azania-footer .footer-brand strong {
+      display: block;
+      color: #fff;
+      font-size: 1.1rem;
+    }
+
+    .azania-footer .footer-brand p {
+      margin: 0.4rem 0 0;
+      font-size: 0.9rem;
+      color: #b8d4c6;
+      max-width: 320px;
+    }
+
+    .azania-footer .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem 1.25rem;
+      justify-content: center;
+    }
+
+    .azania-footer .footer-links a {
+      color: #e6f0ea;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    .azania-footer .footer-links a:hover {
+      color: #fff;
+      text-decoration: underline;
+    }
+
+    .azania-footer .footer-legal {
+      font-size: 0.8rem;
+      color: #9fb9ac;
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      padding-top: 1rem;
+      width: 100%;
+      text-align: center;
+    }
+
+    @media (min-width: 768px) {
+      .azania-footer .footer-inner {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: flex-start;
+        text-align: left;
+      }
+
+      .azania-footer .footer-brand img {
+        margin: 0 0 0.4rem;
+      }
+
+      .azania-footer .footer-links {
+        justify-content: flex-end;
+      }
+    }
+</style>
+</head>
+
+<body>
+
+<main class="checkout-container">
+
+<h1>Checkout</h1>
+
+<section class="billing-section">
+<h2>Shipping Information</h2>
+
+<form id="checkout-form">
+
+<input type="text" id="fullName" placeholder="Full Name" required>
+<input type="email" id="email" placeholder="Email" required>
+<input type="text" id="address" placeholder="Address" required>
+<input type="text" id="city" placeholder="City" required>
+<input type="text" id="postal" placeholder="Postal Code" required>
+<input type="text" id="country" placeholder="Country" required>
+
+</form>
+
+</section>
+
+<section class="summary-section">
+
+<h2>Order Summary</h2>
+
+<ul id="order-summary"></ul>
+
+<h3>Total: R<span id="order-total">0.00</span></h3>
+
+<button id="pay-btn" onclick="completeCheckout()">Pay with PayFast</button>
+
+</section>
+
+</main>
+
+<script>
+
+/* =============================
+CONFIG
+============================= */
+
+const BASE_API = `${window.location.protocol}//api.azaniashop.co.za/api`;
+
+const ORDER_API = `${BASE_API}/orders`;
+const PAYFAST_API = `${BASE_API}/payfast/create-payment`;
+
+/* =============================
+HELPERS
+============================= */
+
+function getUser(){
+return JSON.parse(localStorage.getItem("azaniaUser"));
+}
+
+function getToken(){
+return localStorage.getItem("azaniaToken");
+}
+
+function getCart(){
+return JSON.parse(localStorage.getItem("cart")) || [];
+}
+
+function clearCart(){
+localStorage.removeItem("cart");
+}
+
+/* =============================
+RENDER SUMMARY
+============================= */
+
+function renderSummary(){
+
+const cart = getCart();
+const summaryList = document.getElementById("order-summary");
+const totalElement = document.getElementById("order-total");
+
+summaryList.innerHTML="";
+
+if(cart.length===0){
+summaryList.innerHTML="<li>Your cart is empty</li>";
+return;
+}
+
+let total = 0;
+
+cart.forEach(item => {
+
+if(!item || !item.price || !item.quantity) return;
+
+total += item.price * item.quantity;
+
+const li = document.createElement("li");
+li.textContent = `${item.name} - R${item.price} x ${item.quantity}`;
+summaryList.appendChild(li);
+
+});
+
+totalElement.textContent = total.toFixed(2);
+
+}
+
+/* =============================
+CHECKOUT
+============================= */
+
+async function completeCheckout(){
+
+const user = getUser();
+const token = getToken();
+const cart = getCart();
+const btn = document.getElementById("pay-btn");
+
+if(!user){
+alert("Please login first");
+return;
+}
+
+if(cart.length===0){
+alert("Cart is empty");
+return;
+}
+
+/* Validate fields */
+
+const shippingAddress = {
+fullName: document.getElementById("fullName").value.trim(),
+email: document.getElementById("email").value.trim(),
+address: document.getElementById("address").value.trim(),
+city: document.getElementById("city").value.trim(),
+postal: document.getElementById("postal").value.trim(),
+country: document.getElementById("country").value.trim()
+};
+
+if(Object.values(shippingAddress).some(v => !v)){
+alert("Please fill in all fields");
+return;
+}
+
+try{
+
+btn.disabled = true;
+btn.textContent = "Processing...";
+
+/* Build items directly from cart */
+
+const items = cart.map(item => ({
+product: item._id,
+name: item.name,
+price: item.price,
+quantity: item.quantity
+}));
+
+const totalAmount = items.reduce((sum,i)=>sum+i.price*i.quantity,0);
+
+/* Create order */
+
+const orderRes = await fetch(ORDER_API,{
+method:"POST",
+headers:{
+"Content-Type":"application/json",
+"Authorization":"Bearer "+token
+},
+body:JSON.stringify({
+items,
+totalAmount,
+shippingAddress
+})
+});
+
+const orderData = await orderRes.json();
+
+if(!orderRes.ok){
+throw new Error(orderData.message || "Order failed");
+}
+
+const orderId = orderData.order._id;
+
+/* PayFast */
+
+const payRes = await fetch(PAYFAST_API,{
+method:"POST",
+headers:{
+"Content-Type":"application/json",
+"Authorization":"Bearer "+token
+},
+body:JSON.stringify({ orderId })
+});
+
+const payData = await payRes.json();
+
+if(!payRes.ok || !payData.payfastUrl){
+throw new Error("Payment initialization failed");
+}
+
+/* Clear cart before redirect */
+
+clearCart();
+
+/* Redirect */
+
+window.location.href = payData.payfastUrl;
+
+}catch(err){
+console.error(err);
+alert(err.message || "Checkout failed");
+
+btn.disabled = false;
+btn.textContent = "Pay with PayFast";
+}
+
+}
+
+/* =============================
+INIT
+============================= */
+
+document.addEventListener("DOMContentLoaded",renderSummary);
+
+</script>
+
+  <footer class="azania-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <img src="A.jpg" alt="Azania Marketplace" onerror="this.style.display='none'">
+        <strong>Azania Marketplace</strong>
+        <p>Discover local brands and shop unique South African fashion.</p>
+      </div>
+      <nav class="footer-links" aria-label="Footer">
+        <a href="index.html">Home</a>
+        <a href="dashboard.html">Shop</a>
+        <a href="about.html">About</a>
+        <a href="Contact.html">Contact</a>
+        <a href="signup.html">Sign Up</a>
+      </nav>
+      <div class="footer-legal">&copy; 2026 Azania Marketplace. All rights reserved.</div>
+    </div>
+  </footer>
+</body>
+</html>

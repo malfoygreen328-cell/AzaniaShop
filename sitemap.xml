@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <sitemap>
+    <loc>https://azaniashop.co.za/sitemaps/sitemap-pages.xml</loc>
+    <lastmod>2026-03-15</lastmod>
+  </sitemap>
+
+  <sitemap>
+    <loc>https://azaniashop.co.za/sitemaps/sitemap-categories.xml</loc>
+    <lastmod>2026-03-15</lastmod>
+  </sitemap>
+
+  <sitemap>
+    <loc>https://azaniashop.co.za/sitemaps/sitemap-brands.xml</loc>
+    <lastmod>2026-03-15</lastmod>
+  </sitemap>
+
+  <sitemap>
+    <loc>https://azaniashop.co.za/sitemaps/sitemap-products.xml</loc>
+    <lastmod>2026-03-15</lastmod>
+  </sitemap>
+
+</sitemapindex>

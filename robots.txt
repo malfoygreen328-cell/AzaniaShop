@@ -1,0 +1,31 @@
+User-agent: *
+
+# Allow main site
+Allow: /
+
+# Block admin/vendor areas
+Disallow: /admin/
+Disallow: /vendor/
+Disallow: /dashboard/
+Disallow: /login/
+Disallow: /register/
+Disallow: /checkout/
+Disallow: /cart/
+
+# Block API / backend
+Disallow: /api/
+Disallow: /backend/
+
+# Block development files
+Disallow: /.env
+Disallow: /node_modules/
+Disallow: /.git/
+
+# Allow important assets
+Allow: /assets/
+Allow: /images/
+Allow: /css/
+Allow: /js/
+
+# Sitemap location
+Sitemap: https://azaniashop.co.za/sitemaps/sitemap-index.xml
